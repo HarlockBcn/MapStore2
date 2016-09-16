@@ -1,6 +1,7 @@
 var path = require("path");
 
 module.exports = {
+    arcgis: path.join(__dirname, "web", "client", "examples", "arcgis", "app"),
     mouseposition: path.join(__dirname, "web", "client", "examples", "mouseposition", "app"),
     scalebar: path.join(__dirname, "web", "client", "examples", "scalebar", "app"),
     layertree: path.join(__dirname, "web", "client", "examples", "layertree", "app"),

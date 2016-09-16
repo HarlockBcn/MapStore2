@@ -1,0 +1,152 @@
+var React = require('react');
+var Layers = require('../../../utils/arcgis/Layers');
+var assign = require('object-assign');
+const _ = require('lodash');
+
+const ArcgisLayer = React.createClass({
+    propTypes: {
+        map: React.PropTypes.object,
+        mapId: React.PropTypes.string,
+        srs: React.PropTypes.string,
+        type: React.PropTypes.string,
+        options: React.PropTypes.object,
+        onLayerLoading: React.PropTypes.func,
+        onLayerLoad: React.PropTypes.func,
+        position: React.PropTypes.number,
+        observables: React.PropTypes.array,
+        onInvalid: React.PropTypes.func
+    },
+    getDefaultProps() {
+        return {
+            observables: [],
+            onLayerLoading: () => {},
+            onLayerLoad: () => {},
+            onInvalid: () => {}
+        };
+    },
+    componentDidMount() {        
+        this.valid = true;
+        this.tilestoload = 0;
+        this.createLayer(this.props.type, this.props.options, this.props.position);
+    },
+    componentWillReceiveProps(newProps) {
+        const newVisibility = newProps.options && newProps.options.visibility !== false;
+        this.setLayerVisibility(newVisibility);
+
+        const newOpacity = (newProps.options && newProps.options.opacity !== undefined) ? newProps.options.opacity : 1.0;
+        this.setLayerOpacity(newOpacity);
+
+        if (this.props.options) {
+            this.updateLayer(newProps, this.props);
+        }
+    },
+    componentWillUnmount() {
+        if (this.layer && this.props.map) {
+            if (this.layer.detached) {
+                this.layer.remove();
+            } else {
+                this.props.map.removeLayer(this.layer);
+            }
+        }
+    },
+    render() {
+        console.log('render layer');
+        if (this.props.children) {
+            const layer = this.layer;
+            const children = layer ? React.Children.map(this.props.children, child => {
+                return child ? React.cloneElement(child, {container: layer, styleName: this.props.options && this.props.options.styleName}) : null;
+            }) : null;
+            return (
+                <noscript>
+                    {children}
+                </noscript>
+            );
+        }
+
+        return Layers.renderLayer(this.props.type, this.props.options, this.props.map, this.props.mapId, this.layer);
+    },
+    setLayerVisibility(visibility) {
+        var oldVisibility = this.props.options && this.props.options.visibility !== false;
+        if (visibility !== oldVisibility && this.layer && this.isValid()) {
+            this.layer.setVisibility(visibility);
+        }
+    },
+    setLayerOpacity(opacity) {
+        var oldOpacity = (this.props.options && this.props.options.opacity !== undefined) ? this.props.options.opacity : 1.0;
+        if (opacity !== oldOpacity && this.layer) {
+            this.layer.setOpacity(opacity);
+        }
+    },
+    generateOpts(options, position, srs) {
+        return assign({}, options, position ? {zIndex: position, srs} : null, {
+            onError: () => {
+                this.props.onInvalid(this.props.type, options);
+            }
+        });
+    },
+    createLayer(type, options, position) {
+        console.log('create layer');
+        if (type) {
+            const layerOptions = this.generateOpts(options, position, this.props.srs);
+            this.layer = Layers.createLayer(type, layerOptions, this.props.map, this.props.mapId);
+            if (this.layer && !this.layer.detached) {
+                this.addLayer(options);
+            }
+        }
+    },
+    updateLayer(newProps, oldProps) {
+        console.log('update layer');
+        // optimization to avoid to update the layer if not necessary
+        if (newProps.position === oldProps.position && newProps.srs === oldProps.srs) {
+            // check if options are the same, except loading
+            if (newProps.options === oldProps.options) return;
+            if (_.isEqual( _.omit(newProps.options, ["loading"]), _.omit(oldProps.options, ["loading"]) ) ) {
+                return;
+            }
+        }
+        Layers.updateLayer(
+            this.props.type,
+            this.layer,
+            this.generateOpts(newProps.options, newProps.position, newProps.srs),
+            this.generateOpts(oldProps.options, oldProps.position, oldProps.srs));
+    },
+    addLayer(options) {
+        console.log('add layer');
+        if (this.isValid()) {
+            console.log('add layer valid');
+            this.props.map.addLayer(this.layer, this.props.position);
+            
+            this.layer.on('update-start', () => {
+                if (this.tilestoload === 0) {
+                    this.props.onLayerLoading(options.id);
+                    this.tilestoload++;
+                } else {
+                    this.tilestoload++;
+                }
+            });
+            this.layer.on('update-end', () => {
+                this.tilestoload--;
+                if (this.tilestoload === 0) {
+                    this.props.onLayerLoad(options.id);
+                }
+            });
+            this.layer.on('error', () => {
+                this.tilestoload--;
+                if (this.tilestoload === 0) {
+                    this.props.onLayerLoad(options.id);
+                }
+            });
+            
+        }
+    },
+    isValid() {
+        const valid = Layers.isValid(this.props.type, this.layer);
+        if (this.valid && !valid) {
+            this.props.onInvalid(this.props.type, this.props.options);
+        }
+        this.valid = valid;
+        return valid;
+    }
+});
+
+module.exports = ArcgisLayer;
