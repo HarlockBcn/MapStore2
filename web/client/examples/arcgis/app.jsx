@@ -1,53 +1,75 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-
 var Provider = require('react-redux').Provider;
+const {changeBrowserProperties} = require('../../actions/browser');
+const LocaleUtils = require('../../utils/LocaleUtils');
+const {loadMapConfig} = require('../../actions/config');
+const {loadLocale} = require('../../actions/locale');
+const {loadPrintCapabilities} = require('../../actions/print');
 
-// include application component
-var ArcgisApp = require('./containers/arcgis-app');
-var url = require('url');
+    // include application component
+    const ArcgisApp = require('./containers/arcgis-app');
+    var url = require('url');
+    const {connect} = require('react-redux');    
+    var ConfigUtils = require('../../utils/ConfigUtils');
+    const {loadMaps} = require('../../actions/maps');
 
-var loadMapConfig = require('../../actions/config').loadMapConfig;
-var ConfigUtils = require('../../utils/ConfigUtils');
-const {loadMaps} = require('../../actions/maps');
+    const Localized = connect((state) => ({
+        messages: state.locale && state.locale.messages,
+        locale: state.locale && state.locale.current,
+        loadingError: state.locale && state.locale.localeError
+    }))(require('../../components/I18N/Localized'));
 
-const {pages, pluginsDef, initialState, storeOpts} = require('./appConfig');
-// initializes Redux store
-//var store = require('./stores/myappstore');
-const appStore = require('../../stores/StandardStore').bind(null, initialState, {       
-        maps: require('../../reducers/maps')
-});
+    const {pages, pluginsDef, initialState, storeOpts} = require('./appConfig');
+    const {plugins} = pluginsDef;
+    // initializes Redux store
+    const store = require('./myappstore')(pluginsDef.plugins);
 
-// reads parameter(s) from the url
-const urlQuery = url.parse(window.location.href, true).query;
+    // reads parameter(s) from the url
+    const urlQuery = url.parse(window.location.href, true).query;
+       
 
-// get configuration file url (defaults to config.json on the app folder)
-const { configUrl, legacy } = ConfigUtils.getConfigurationOptions(urlQuery, 'config', 'json');
-
-const StandardApp = require('../../components/app/StandardApp');
-
-
-
-const initialActions = [
-        () => loadMaps(ConfigUtils.getDefaults().geoStoreUrl, 'arcgis' || "*")
-];
-
-
-// dispatch an action to load the configuration from the config.json file
-//appStore.dispatch(loadMapConfig(configUrl, legacy));
-
-const appConfig = {
-        storeOpts,
-        appStore,
-        pluginsDef,
-        initialActions,        
-        printingEnabled: true
+    const appConfig = {
+        plugins        
     };
 
-    ReactDOM.render(
-        <StandardApp {...appConfig}/>,
-        document.getElementById('container')
-    );
+    const renderPage = () => {
+        ReactDOM.render(
+            (                
+                <Provider store={store}>
+                    <Localized>
+                        <ArcgisApp {...appConfig}></ArcgisApp>
+                    </Localized>
+                </Provider>
+            ),        
+            document.getElementById('container')
+        );
+    }   
+    
+    //renderPage();
+    // get configuration file url (defaults to config.json on the app folder)
+    //const { configUrl, legacy } = ConfigUtils.getUserConfiguration('config', 'json');
+    // dispatch an action to load the configuration from the config.json file
+    //store.dispatch(loadMapConfig(configUrl, legacy));
+
+    
+    
+    ConfigUtils.loadConfiguration().then(() => {
+        store.dispatch(changeBrowserProperties(ConfigUtils.getBrowserProperties()));
+
+        const { configUrl, legacy } = ConfigUtils.getUserConfiguration('config', 'json');
+        store.dispatch(loadMapConfig(configUrl, legacy));
+
+        let locale = LocaleUtils.getUserLocale();
+        store.dispatch(loadLocale('../../translations', locale));
+
+        //store.dispatch(loadPrintCapabilities(ConfigUtils.getConfigProp('printUrl')));
+
+        renderPage();
+    });
+
+
+
     
 // Renders the application, wrapped by the Redux Provider to connect the store to components
 /*
@@ -58,3 +80,5 @@ ReactDOM.render(
     document.getElementById('container')
 );
 */
+
+

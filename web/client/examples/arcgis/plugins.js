@@ -8,44 +8,40 @@
 
 module.exports = {
     plugins: {
-        MousePositionPlugin: require('../../plugins/MousePosition'),
-        PrintPlugin: require('../../plugins/Print'),
-        IdentifyPlugin: require('../../plugins/Identify'),
-        TOCPlugin: require('../../plugins/TOC'),
-        BackgroundSwitcherPlugin: require('../../plugins/BackgroundSwitcher'),
-        MeasurePlugin: require('../../plugins/Measure'),
-        MeasureResultsPlugin: require('../../plugins/MeasureResults'),
         MapPlugin: require('../../plugins/Map'),
-        ToolbarPlugin: require('../../plugins/Toolbar'),
-        DrawerMenuPlugin: require('../../plugins/DrawerMenu'),
-        ShapeFilePlugin: require('../../plugins/ShapeFile'),
-        SnapshotPlugin: require('../../plugins/Snapshot'),
-        SettingsPlugin: require('../../plugins/Settings'),
-        ExpanderPlugin: require('../../plugins/Expander'),
-        SearchPlugin: require('../../plugins/Search'),
-        ScaleBoxPlugin: require('../../plugins/ScaleBox'),
-        LocatePlugin: require('../../plugins/Locate'),
+        MousePositionPlugin: require('../../plugins/MousePosition'),
+        MapLoadingPlugin: require('../../plugins/MapLoading'),
+        ZoomAllPlugin: require('../../plugins/ZoomAll'),
         ZoomInPlugin: require('../../plugins/ZoomIn'),
         ZoomOutPlugin: require('../../plugins/ZoomOut'),
-        ZoomAllPlugin: require('../../plugins/ZoomAll'),
-        MapLoadingPlugin: require('../../plugins/MapLoading'),
+        SearchPlugin: require('../../plugins/Search'),
+        ScaleBoxPlugin: require('../../plugins/ScaleBox'),
+        ToolbarPlugin: require('../../plugins/Toolbar'),
+        LocatePlugin: require('../../plugins/Locate'),
+        TOCPlugin: require('../../plugins/TOC'),
+        RasterStylerPlugin: require('../../plugins/RasterStyler'),
+        MetadataExplorerPlugin: require('../../plugins/MetadataExplorer'),
+        ExpanderPlugin: require('../../plugins/Expander'),
+        BackgroundSwitcherPlugin: require('../../plugins/BackgroundSwitcher')
+        /*
+        DrawerMenuPlugin: require('../../plugins/DrawerMenu'),
+        BurgerMenuPlugin: require('../../plugins/BurgerMenu'),
+        OmniBarPlugin: require('../../plugins/OmniBar'),
+        
+        IdentifyPlugin: require('../../plugins/Identify'),
+        
+        
+        
+        MeasurePlugin: require('../../plugins/Measure'),
+        PrintPlugin: require('../../plugins/Print'),
+        SnapshotPlugin: require('../../plugins/Snapshot'),
+        ShapeFilePlugin: require('../../plugins/ShapeFile'),
+        
+        SettingsPlugin: require('../../plugins/Settings'),
+        
         HelpPlugin: require('../../plugins/Help'),
         HomePlugin: require('../../plugins/Home'),
-        MetadataExplorerPlugin: require('../../plugins/MetadataExplorer'),
-        LoginPlugin: require('../../plugins/Login'),
-        OmniBarPlugin: require('../../plugins/OmniBar'),
-        BurgerMenuPlugin: require('../../plugins/BurgerMenu'),
-        UndoPlugin: require('../../plugins/History'),
-        RedoPlugin: require('../../plugins/History'),
-        MapsPlugin: require('../../plugins/Maps'),
-        MapSearchPlugin: require('../../plugins/MapSearch'),
-        LanguagePlugin: require('../../plugins/Language'),
-        ManagerPlugin: require('../../plugins/manager/Manager'),
-        RulesManagerPlugin: require('../../plugins/manager/RulesManager'),
-        ManagerMenuPlugin: require('../../plugins/manager/ManagerMenu'),
-        SharePlugin: require('../../plugins/Share'),
-        SavePlugin: require('../../plugins/Save'),
-        SaveAsPlugin: require('../../plugins/SaveAs')
+        LoginPlugin: require('../../plugins/Login')*/
     },
     requires: {
         ReactSwipe: require('react-swipeable-views').default,

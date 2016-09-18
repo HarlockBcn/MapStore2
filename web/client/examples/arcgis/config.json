@@ -1,8 +1,8 @@
 {
   "map": {
-    "projection": "EPSG:900913",
+    "projection": "EPSG:3857",
 		"units": "m",
-		"center": {"x": 1250000.000000, "y": 5370000.000000, "crs": "EPSG:900913"},
+		"center": {"x": 1250000.000000, "y": 5370000.000000, "crs": "EPSG:3857"},
     "zoom":5,
     "layers": [
       {

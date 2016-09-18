@@ -9,11 +9,12 @@ const weCantMake = function weCantMake (request) {
 module.exports = {
 
     entry: {
-        'arcgis-app': path.join(__dirname, "app")
+        'arcgis-app': path.join(__dirname, "web", "client", "examples", "arcgis", "app")        
     },
 
     output: {
-      path: path.join(__dirname, "dist"),
+        //path: path.join(__dirname, "dist"),        
+        path: path.resolve('dist'),
         publicPath: "/dist",
         filename: "[name].js",
         libraryTarget: 'amd'
@@ -29,6 +30,7 @@ module.exports = {
 
     resolve: {
       extensions: ["", ".js", ".jsx"]
+      //,modulesDirectories: ['src', 'node_modules']
     },
 
     plugins: [
@@ -46,7 +48,18 @@ module.exports = {
             { test: /\.(ttf|eot|svg)(\?v=[0-9].[0-9].[0-9])?$/, loader: "file-loader?name=[name].[ext]" },
             { test: /\.(png|jpg|gif)$/, loader: 'url-loader?name=[path][name].[ext]&limit=8192'}, // inline base64 URLs for <=8k images, direct URLs for the rest
             
-            { test: /\.jsx?$/, loader: "babel-loader", exclude: /node_modules/ }
+            {
+                test: /\.jsx$/,
+                exclude: /(ol\.js)$|(Cesium\.js)$|(react.js)$/,
+                loader: "react-hot",
+                include: path.join(__dirname, "web", "client")
+            }, {
+                test: /\.jsx?$/,
+                exclude: /(ol\.js)$|(Cesium\.js)$|(react.js)$/,
+                loader: "babel-loader",                
+                include: path.join(__dirname, "web", "client")
+            }
+            //{ test: /\.jsx?$/, loader: "babel-loader", exclude: /node_modules/ }
             /*
             { 
                 test: /\.jsx?$/,
@@ -57,5 +70,6 @@ module.exports = {
         ]
     },
     devtool: 'inline-source-map',
+    //devtool: 'eval',
     debug: true
 };
