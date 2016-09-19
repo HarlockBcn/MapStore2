@@ -10,6 +10,7 @@ var Point = require("esri/geometry/Point");
 var SpatialReference = require("esri/SpatialReference");
 var ScreenPoint = require("esri/geometry/ScreenPoint");
 var Extent = require("esri/geometry/Extent");
+var ScaleUtils = require("esri/geometry/scaleUtils");
 var React = require('react');
 var assign = require('object-assign');
 
@@ -213,9 +214,73 @@ var ArcgisMap = React.createClass({
         }
         this.map.destroy();
     },
+
     getResolutions() {
-        return [];
+        var wkid = this._crsToWkid(this.props.projection);
+
+        if (this.props.mapOptions && this.props.mapOptions.view && this.props.mapOptions.view.resolutions) {
+            return this.props.mapOptions.view.resolutions;
+        }
+        const defaultMaxZoom = 28;
+        const defaultZoomFactor = 2;
+
+        let minZoom = this.props.mapOptions.minZoom !== undefined ?
+            this.props.mapOptions.minZoom : 0;
+
+        let maxZoom = this.props.mapOptions.maxZoom !== undefined ?
+            this.props.mapOptions.maxZoom : defaultMaxZoom;
+
+        let zoomFactor = this.props.mapOptions.zoomFactor !== undefined ?
+            this.props.mapOptions.zoomFactor : defaultZoomFactor;
+
+        const xymin = CoordinatesUtils.reproject([-180.0, -90.0], 'EPSG:4326', this.props.projection);
+        const xymax = CoordinatesUtils.reproject([180.0, 90.0], 'EPSG:4326', this.props.projection);
+        
+        //const extent = new Extent(xymin.x, xymin.y, xymax.x, xymax.y, new SpatialReference(wkid));
+        const extent = new Extent(
+            -20037508.34,-20037508.34,20037508.34,20037508.34,
+            new SpatialReference(wkid));
+        const degreeMeters = ScaleUtils.getUnitValueForSR(this.map.spatialReference);
+        const unitMeters = ScaleUtils.getUnitValueForSR(new SpatialReference(4326));
+        const size = !extent ?                  
+            // use an extent that can fit the whole world if need be
+            360 * degreeMeters / unitMeters :
+                Math.max(extent.getWidth(), extent.getHeight());
+
+        const defaultMaxResolution = size / 256 / Math.pow(
+            defaultZoomFactor, 0);
+
+        const defaultMinResolution = defaultMaxResolution / Math.pow(
+            defaultZoomFactor, defaultMaxZoom - 0);
+
+        // user provided maxResolution takes precedence
+        let maxResolution = this.props.mapOptions.maxResolution;
+        if (maxResolution !== undefined) {
+            minZoom = 0;
+        } else {
+            maxResolution = defaultMaxResolution / Math.pow(zoomFactor, minZoom);
+        }
+
+        // user provided minResolution takes precedence
+        let minResolution = this.props.mapOptions.minResolution;
+        if (minResolution === undefined) {
+            if (this.props.mapOptions.maxZoom !== undefined) {
+                if (this.props.mapOptions.maxResolution !== undefined) {
+                    minResolution = maxResolution / Math.pow(zoomFactor, maxZoom);
+                } else {
+                    minResolution = defaultMaxResolution / Math.pow(zoomFactor, maxZoom);
+                }
+            } else {
+                minResolution = defaultMinResolution;
+            }
+        }
+
+        // given discrete zoom levels, minResolution may be different than provided
+        maxZoom = minZoom + Math.floor(
+            Math.log(maxResolution / minResolution) / Math.log(zoomFactor));
+        return Array.apply(0, Array(maxZoom - minZoom + 1)).map((x, y) => maxResolution / Math.pow(zoomFactor, y));
     },
+
     render() {
         const map = this.map;
         const children = map ? React.Children.map(this.props.children, child => {
@@ -244,7 +309,6 @@ var ArcgisMap = React.createClass({
     },
     
     _updateMapPositionFromNewProps(newProps) {
-        console.log('_updateMapPositionFromNewProps');
         var map = this.map;
         const currentCenter = this.props.center;
         const centerNotUpdated = newProps.center.y === currentCenter.y &&
@@ -266,6 +330,10 @@ var ArcgisMap = React.createClass({
     },
 
     registerHooks() {
+        mapUtils.registerHook(mapUtils.RESOLUTION_HOOK, () => {
+            return this.map.getScale();
+        });
+
         mapUtils.registerHook(mapUtils.RESOLUTIONS_HOOK, () => {
             return this.getResolutions();
         });

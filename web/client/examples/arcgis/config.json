@@ -29,6 +29,16 @@
         "name": "nurc:Arc_Sample",
         "group": "Meteo",
         "format": "image/png"
+      },
+      {
+        "type": "wms",
+        "url":"http://demo.geo-solutions.it/geoserver/wms",
+        "visibility": true,
+        "opacity": 0.5,
+        "title": "EEUU States",
+        "name": "ws_my:states",
+        "group": "States",
+        "format": "image/png"
       }
     ]
   }
