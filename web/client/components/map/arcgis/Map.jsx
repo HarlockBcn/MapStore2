@@ -58,6 +58,7 @@ var ArcgisMap = React.createClass({
           interactive: true
         };
     },
+
     _crsToWkid(crs) {
         return parseInt(crs.replace('EPSG:',''));
     },
@@ -87,13 +88,17 @@ var ArcgisMap = React.createClass({
         var center = CoordinatesUtils.reproject([this.props.center.x, this.props.center.y], 'EPSG:4326', this.props.projection);
         var wkid = this._crsToWkid(this.props.projection);
 
-        let map = new Map(this.props.id, {
-            //basemap: "streets",
-            //center: new Point(center.x, center.y, new SpatialReference({ wkid: 900913 })),
-            extent: new Extent({xmin: center.x, ymin: center.y, xmax: center.x, ymax: center.y, spatialReference: {wkid: wkid}}),                
+        let map = new Map(this.props.id, {            
+            extent: new Extent({xmin: center.x, ymin: center.y, xmax: center.x, ymax: center.y, spatialReference: {wkid: wkid}}),
+            slider: this.props.zoomControl,                
             zoom: this.props.zoom                      
         });
         this.map = map;
+        if (!this.props.interactive) {
+            map.disableMapNavigatioon();            
+        } else {
+            map.enableMapNavigation();
+        }
 
         map.on('pan-end', (params)  => {                        
             this._onMoveEnd(params.extent);
@@ -104,7 +109,36 @@ var ArcgisMap = React.createClass({
             this._onMoveEnd(params.extent);
             // TODO: When zoom to scale, esri map pans and zooms, then pan-end and zoom-end are triggered
         });
-
+        map.on('click', (event) => {
+            if (this.props.onClick) {
+                let pos = event.mapPoint;
+                let latlng = CoordinatesUtils.reproject([pos.x, pos.y], this.props.projection, 'EPSG:4326');
+                this.props.onClick({
+                    pixel: {
+                        x: event.clientX,
+                        y: event.clientY,
+                    },
+                    latlng: {
+                        lat: latlng.y,
+                        lng: latlng.x
+                    }
+                });
+            }
+        });
+        this.mapMouseMove = map.on('mouse-move', (event) => {
+            this._mouseMoveEvent(event);    
+        });
+        this.mapMouseDragStart = this.map.on('mouse-drag-start', () => { 
+            this.mapMouseMove.remove(); 
+            this.mapMouseMove = null; 
+        });
+        this.mapMouseDragEnd =this.map.on('mouse-drag-end', () => { 
+            this.mapMouseMove = map.on('mouse-move', (event) => {
+                this._mouseMoveEvent(event);            
+            });
+        });
+        
+        this.setMousePointer(this.props.mousePointer);
         // NOTE: this re-call render function after div creation to have the map initialized.
         this.forceUpdate();
 
@@ -113,6 +147,19 @@ var ArcgisMap = React.createClass({
         }
         
     },
+
+    _mouseMoveEvent(event) {
+        if (event.mapPoint) {
+                let pos = event.mapPoint;
+                let latlng = CoordinatesUtils.reproject([pos.x, pos.y], this.props.projection, 'EPSG:4326');
+                this.props.onMouseMove({
+                    y: latlng.y,
+                    x: latlng.x,
+                    crs: "EPSG:4326"
+                });
+        }
+    },
+
     componentWillReceiveProps(newProps) {
         if (newProps.mousePointer !== this.props.mousePointer) {
             this.setMousePointer(newProps.mousePointer);
@@ -155,7 +202,16 @@ var ArcgisMap = React.createClass({
         return false;
     },
     componentWillUnmount() {
-        
+        if (this.mapMouseMove) {
+            this.mapMouseMove.remove();            
+        }
+        if (this.mapMouseDragStart) {
+            this.mapMouseDragStart.remove();
+        }
+        if (this.mapMouseDragEnd) {
+            this.mapMouseDragEnd.remove();
+        }
+        this.map.destroy();
     },
     getResolutions() {
         return [];

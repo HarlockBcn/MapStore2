@@ -22,13 +22,14 @@ module.exports = {
         RasterStylerPlugin: require('../../plugins/RasterStyler'),
         MetadataExplorerPlugin: require('../../plugins/MetadataExplorer'),
         ExpanderPlugin: require('../../plugins/Expander'),
+        IdentifyPlugin: require('../../plugins/Identify'),
+        MeasurePlugin: require('../../plugins/Measure'),
         BackgroundSwitcherPlugin: require('../../plugins/BackgroundSwitcher')
         /*
         DrawerMenuPlugin: require('../../plugins/DrawerMenu'),
         BurgerMenuPlugin: require('../../plugins/BurgerMenu'),
         OmniBarPlugin: require('../../plugins/OmniBar'),
         
-        IdentifyPlugin: require('../../plugins/Identify'),
         
         
         

@@ -49,8 +49,7 @@ const ArcgisLayer = React.createClass({
             }
         }
     },
-    render() {
-        console.log('render layer');
+    render() {        
         if (this.props.children) {
             const layer = this.layer;
             const children = layer ? React.Children.map(this.props.children, child => {
@@ -84,8 +83,7 @@ const ArcgisLayer = React.createClass({
             }
         });
     },
-    createLayer(type, options, position) {
-        console.log('create layer');
+    createLayer(type, options, position) {        
         if (type) {
             const layerOptions = this.generateOpts(options, position, this.props.srs);
             this.layer = Layers.createLayer(type, layerOptions, this.props.map, this.props.mapId);
@@ -94,8 +92,7 @@ const ArcgisLayer = React.createClass({
             }
         }
     },
-    updateLayer(newProps, oldProps) {
-        console.log('update layer');
+    updateLayer(newProps, oldProps) {        
         // optimization to avoid to update the layer if not necessary
         if (newProps.position === oldProps.position && newProps.srs === oldProps.srs) {
             // check if options are the same, except loading
@@ -110,10 +107,8 @@ const ArcgisLayer = React.createClass({
             this.generateOpts(newProps.options, newProps.position, newProps.srs),
             this.generateOpts(oldProps.options, oldProps.position, oldProps.srs));
     },
-    addLayer(options) {
-        console.log('add layer');
-        if (this.isValid()) {
-            console.log('add layer valid');
+    addLayer(options) {        
+        if (this.isValid()) {            
             this.props.map.addLayer(this.layer, this.props.position);
             
             this.layer.on('update-start', () => {

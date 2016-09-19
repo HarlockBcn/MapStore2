@@ -10,6 +10,9 @@ module.exports = {
     LMap: require('../../../components/map/arcgis/Map'),
     Overview: require('../../../components/map/arcgis/Overview'),
     Layer: require('../../../components/map/arcgis/Layer'),
-    Locate: require('../../../components/map/arcgis/Locate')
+    Locate: require('../../../components/map/arcgis/Locate'),
+    ScaleBar: require('../../../components/map/arcgis/ScaleBar'),
+    MeasurementSupport: require('../../../components/map/arcgis/MeasurementSupport')
+
     
 };

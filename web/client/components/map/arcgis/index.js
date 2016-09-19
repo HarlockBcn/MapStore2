@@ -1,7 +1,9 @@
 module.exports = {
-    LMap: require('./Map.jsx'),
+    LMap: require('./Map'),
     Overview: require('./Overview'),
-    LLayer: require('./Layer.jsx'),
-    Locate: require('./Locate.jsx')
+    LLayer: require('./Layer'),
+    Locate: require('./Locate'),
+    ScaleBar: require('./ScaleBar'),
+    MeasurementSupport: require('./MeasurementSupport')
 
 };
